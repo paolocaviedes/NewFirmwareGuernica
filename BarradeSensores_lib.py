@@ -1,13 +1,74 @@
 import requests
 import time
 
-#ip 192.168.29.79
-
+#Se define una pausa
 def pausa(sec):
 	time.sleep(sec)
 
 
-#Working
+#Funcion que al recibir la cadena, entrega la cantidad de ceros antes del primer 1 pero de atras hacia adelante
+def contarZeros(cadena):
+	countZero=0
+	flag=True
+	for elemento in cadena:
+		if flag:
+			if elemento=='0':
+				countZero+=1
+			else:
+				flag=False
+	return countZero
+
+#Funcion que al recibir la cadena, entrega la cantidad de ceros antes del primer 1 pero de atras hacia adelante
+def contarZerosReverse(cadena):
+	cadena=cadena[::-1]
+	countZero=0
+	flag=True
+	for elemento in cadena:
+		if flag:
+			if elemento=='0':
+				countZero+=1
+			else:
+				flag=False
+	return countZero
+
+#funcion que entrega cuantos caracteres hay entre el primer y ultimo 1 de la cadena
+def contarOnes(cadena):
+	if contarZeros(cadena)==7:
+		return 0
+	return 7 - (contarZeros(cadena)+contarZerosReverse(cadena))
+
+#Funcion que entrega la cadena en el formato correcto, sin ceros entre el primer y ultimo 1
+def transformarCadena(cadena):
+	cadenaDefinitiva=''
+	if contarZeros(cadena)==7:
+		return '0000000'
+	elif contarZeros(cadena)==0 and contarZerosReverse==0:
+		return '1111111'
+	else:
+		cadenaDefinitiva='0'*contarZeros(cadena)+'1'*contarOnes(cadena)+'0'*contarZerosReverse(cadena)
+		return cadenaDefinitiva
+
+#Funcion que retorna el centro de la cadena, segun los sensores activos
+def centro(cadena):
+	center=contarZeros(cadena)+(contarOnes(cadena)/2.0)
+	return center
+
+#Funcion que retorna el ancho de la cadena, segun los sensores activos
+def ancho(cadena):
+	ancho=contarOnes(cadena)
+	return ancho
+
+#Funcion que determina la diferencia entre la posicion pasada y la actual
+def delta(cadenapasada,cadenaactual):
+	absolutepast=abs(centro(cadenapasada))
+	absolutepresent=abs(centro(cadenaactual))
+	delta=absolutepresent-absolutepast
+	return delta
+
+
+#Funciones para el movimiento de la camara
+
+#Funcion moverCamara, al ingresar la ip, el id de la camara y un zoom,pan y tilt, la camara se moverá automaticamente a dicha posicion. 
 def moverCamara(ip,Idcam,zoom,pan,tilt):
 
 	url = "http://"+str(ip)+"/putxml"
@@ -25,6 +86,7 @@ def moverCamara(ip,Idcam,zoom,pan,tilt):
 	return(response.text)
 
 
+#Funcion que a partir de una direccion y un tiempo se moverá durante dicho tiempo en la direccion indicada
 #Working unidad minima 1sec.
 def desplazarCamara(ip,Idcam,direccion,tiempo):
 	flagpan=False
@@ -107,7 +169,8 @@ def desplazarCamara(ip,Idcam,direccion,tiempo):
 		print (response.text)
 
 	return "OK"
-	
+
+#Funcion que a partir de la posicion actual, una direccion, la cantidad de movimiento y un tiempo determinado, la camara se moverá hacia tal direccion, la cantidad indicada durante el tiempo indicado.
 #actualpos=(zoom,pan,tilt)
 #pos= int que indica cuanto se requiere mover
 def moveCam(ip,Idcam,actualpos,direction,pos,tiempo):
@@ -141,36 +204,3 @@ def moveCam(ip,Idcam,actualpos,direction,pos,tiempo):
 		salto+=diferencia
 		#time.sleep(0.0001)
 	return actualposition
-
-
-"""
-print "Ingrese posicion\n"
-zoom=(raw_input("Ingrese zoom: "))
-pan=(raw_input("Ingrese pan: "))
-tilt=(raw_input("Ingrese tilt: "))
-print moverCamara("192.168.29.79",1,zoom,pan,tilt)
-
-"""
-"""
-while zoom>-1:
-	zoom=(raw_input("Ingrese zoom: "))
-	if zoom!=-1:
-		pan=(raw_input("Ingrese pan: "))
-		tilt=(raw_input("Ingrese tilt: "))
-		print moverCamara(1,zoom,pan,tilt)
-"""
-
-"""
-#modificar enteros a flotantes
-desplazarCamara("192.168.29.79",1,"right",2)
-"""
-
-moverCamara("192.168.29.79",1,0,0,0)
-
-
-actualposition=(0,0,0)
-
-r=int(raw_input("Ingrese caracter para continuar:  "))
-while r!=0:
-	actualposition=moveCam("192.168.29.79",1,actualposition,"left",350,3)
-	r=int(raw_input("Ingrese caracter para continuar:  "))
